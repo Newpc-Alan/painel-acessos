@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Acessos · Portal do Educador</title>
+<style>
+  :root{
+    --verde:#1a6b2a;
+    --azul:#0f2c4a;
+    --verde-claro:#2da64a;
+    --cinza-bg:#f4f6f8;
+    --cinza-borda:#e2e8f0;
+    --texto:#1e293b;
+    --texto-suave:#64748b;
+    --vermelho:#dc2626;
+    --amarelo:#d97706;
+    --verde-status:#16a34a;
+    --cinza-status:#94a3b8;
+    --roxo:#7c3aed;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Roboto,sans-serif;background:var(--cinza-bg);color:var(--texto);line-height:1.5;}
+
+  .topo{background:var(--azul);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .topo .marca{display:flex;align-items:center;gap:12px;}
+  .topo .logo{width:40px;height:40px;border-radius:8px;background:var(--verde);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;}
+  .topo h1{font-size:18px;font-weight:600;}
+  .topo .sub{font-size:12px;opacity:.7;}
+  .topo .user-box{display:flex;align-items:center;gap:12px;font-size:13px;}
+  .btn-sair{background:rgba(255,255,255,.15);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;}
+  .btn-sair:hover{background:rgba(255,255,255,.25);}
+
+  #tela-login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--azul),var(--verde));padding:20px;}
+  .card-login{background:#fff;border-radius:14px;padding:36px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.25);}
+  .card-login .logo-grande{width:56px;height:56px;border-radius:12px;background:var(--verde);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:24px;margin:0 auto 16px;}
+  .card-login h2{text-align:center;color:var(--azul);font-size:20px;margin-bottom:4px;}
+  .card-login p.sub{text-align:center;color:var(--texto-suave);font-size:13px;margin-bottom:24px;}
+
+  #painel{display:none;}
+  .wrap{max-width:1300px;margin:0 auto;padding:24px;}
+
+  .resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:24px;}
+  .card-num{background:#fff;border-radius:12px;padding:18px;border:1px solid var(--cinza-borda);}
+  .card-num .label{font-size:12px;color:var(--texto-suave);text-transform:uppercase;letter-spacing:.5px;}
+  .card-num .valor{font-size:26px;font-weight:700;margin-top:6px;color:var(--azul);}
+  .card-num.alerta .valor{color:var(--amarelo);}
+  .card-num.critico .valor{color:var(--vermelho);}
+  .card-num.receita .valor{color:var(--verde);}
+
+  .barra-acoes{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;justify-content:space-between;}
+  .busca-filtro{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+  input[type=text],input[type=email],input[type=number],input[type=date],select,textarea{padding:10px 12px;border:1px solid var(--cinza-borda);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--texto);}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--verde);}
+  .busca{flex:1;min-width:180px;}
+
+  .btn{padding:10px 18px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primario{background:var(--verde);color:#fff;}
+  .btn-primario:hover{background:var(--verde-claro);}
+  .btn-azul{background:var(--azul);color:#fff;}
+  .btn-sec{background:#fff;color:var(--azul);border:1px solid var(--cinza-borda);}
+  .btn-sec:hover{background:var(--cinza-bg);}
+  .btn-perigo{background:#fff;color:var(--vermelho);border:1px solid #fecaca;}
+  .btn-perigo:hover{background:#fef2f2;}
+  .btn-mini{padding:6px 10px;font-size:12px;border-radius:6px;}
+
+  .tabela-wrap{background:#fff;border-radius:12px;border:1px solid var(--cinza-borda);overflow:hidden;overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:900px;}
+  th{background:var(--cinza-bg);text-align:left;padding:12px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--texto-suave);border-bottom:1px solid var(--cinza-borda);white-space:nowrap;cursor:pointer;user-select:none;}
+  th:hover{color:var(--azul);}
+  td{padding:12px 14px;border-bottom:1px solid var(--cinza-borda);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#fafbfc;}
+  .nome-cel{font-weight:600;color:var(--azul);}
+  .email-cel{font-size:12px;color:var(--texto-suave);}
+  .local-cel{font-size:12px;color:var(--texto-suave);}
+
+  .badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;}
+  .badge-ativo{background:#dcfce7;color:var(--verde-status);}
+  .badge-vencido{background:#fee2e2;color:var(--vermelho);}
+  .badge-pendente{background:#fef3c7;color:var(--amarelo);}
+  .badge-suspenso{background:#f1f5f9;color:var(--cinza-status);}
+  .badge-plano{background:#e0e7ff;color:#4338ca;}
+  .badge-demo{background:#fef9c3;color:#a16207;border:1px dashed #ca8a04;}
+
+  .venc-prox{color:var(--amarelo);font-weight:600;}
+  .venc-passou{color:var(--vermelho);font-weight:600;}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(15,44,74,.55);align-items:flex-start;justify-content:center;padding:30px 20px;z-index:9999;overflow-y:auto;}
+  .modal-bg.aberto{display:flex;}
+  .modal{background:#fff;border-radius:14px;width:100%;max-width:540px;box-shadow:0 25px 60px rgba(0,0,0,.3);animation:sobe .25s ease;}
+  .modal.pequeno{max-width:420px;}
+  @keyframes sobe{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .modal-topo{padding:20px 24px;border-bottom:1px solid var(--cinza-borda);display:flex;justify-content:space-between;align-items:center;}
+  .modal-topo h3{color:var(--azul);font-size:17px;}
+  .fechar{background:none;border:none;font-size:24px;cursor:pointer;color:var(--texto-suave);line-height:1;}
+  .modal-corpo{padding:24px;}
+  .campo{margin-bottom:16px;}
+  .campo label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--texto);}
+  .campo input,.campo select,.campo textarea{width:100%;}
+  .campo textarea{resize:vertical;min-height:60px;}
+  .grade2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-rodape{padding:18px 24px;border-top:1px solid var(--cinza-borda);display:flex;justify-content:flex-end;gap:10px;}
+  .info-validade{background:var(--cinza-bg);border-radius:8px;padding:12px;font-size:13px;color:var(--texto-suave);margin-top:4px;}
+  .info-validade b{color:var(--azul);}
+  .info-demo{background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:13px;color:#92400e;margin-top:4px;}
+
+  .hist-item{padding:10px 0;border-bottom:1px solid var(--cinza-borda);font-size:13px;display:flex;justify-content:space-between;gap:10px;}
+  .hist-item:last-child{border-bottom:none;}
+  .hist-valor{font-weight:700;color:var(--verde);}
+
+  .vazio{text-align:center;padding:50px 20px;color:var(--texto-suave);}
+  .erro-msg{color:var(--vermelho);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+  .ok-msg{color:var(--verde);font-size:13px;margin-top:10px;text-align:center;min-height:18px;}
+  .carregando-mun{font-size:12px;color:var(--texto-suave);margin-top:4px;}
+
+  /* GRUPO ESCOLAR */
+  .badge-grupo{background:#dbeafe;color:#1d4ed8;}
+  .vagas-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--cinza-bg);color:var(--azul);border:1px solid var(--cinza-borda);}
+  .vagas-pill.cheio{background:#fee2e2;color:var(--vermelho);border-color:#fecaca;}
+  .vagas-pill.quase{background:#fef3c7;color:var(--amarelo);border-color:#fde68a;}
+  .barra-vagas{height:8px;background:var(--cinza-borda);border-radius:20px;overflow:hidden;margin-top:8px;}
+  .barra-vagas .preenchido{height:100%;background:var(--verde);border-radius:20px;transition:width .3s;}
+  .barra-vagas .preenchido.quase{background:var(--amarelo);}
+  .barra-vagas .preenchido.cheio{background:var(--vermelho);}
+  .prof-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--cinza-borda);border-radius:8px;margin-bottom:8px;}
+  .prof-item .dados{font-size:13px;}
+  .prof-item .dados .nome{font-weight:600;color:var(--azul);}
+  .prof-item .dados .email{font-size:12px;color:var(--texto-suave);}
+  .grupo-info{background:var(--cinza-bg);border-radius:10px;padding:16px;margin-bottom:18px;}
+  .grupo-info .linha{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;}
+  .grupo-info .linha b{color:var(--azul);}
+  .add-prof-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;margin-bottom:16px;}
+  .modal.largo{max-width:640px;}
+  @media(max-width:720px){.grade2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="tela-login">
+  <div class="card-login">
+    <div class="logo-grande">PE</div>
+    <h2>Gestão de Acessos</h2>
+    <p class="sub">Portal do Educador · Painel administrativo</p>
+    <div class="campo"><label>E-mail</label><input type="email" id="login-email" placeholder="admin@newpc.com.br" autocomplete="username"></div>
+    <div class="campo"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn btn-primario" id="btn-entrar" style="width:100%;justify-content:center;">Entrar</button>
+    <div class="erro-msg" id="login-erro"></div>
+  </div>
+</div>
+
+<!-- PAINEL -->
+<div id="painel">
+  <div class="topo">
+    <div class="marca">
+      <div class="logo">PE</div>
+      <div><h1>Gestão de Acessos</h1><div class="sub">Portal do Educador</div></div>
+    </div>
+    <div class="user-box"><span id="admin-email"></span><button class="btn-sair" id="btn-sair">Sair</button></div>
+  </div>
+
+  <div class="wrap">
+    <div class="resumo" id="resumo"></div>
+
+    <div class="barra-acoes">
+      <div class="busca-filtro">
+        <input type="text" class="busca" id="busca" placeholder="🔍 Buscar nome ou e-mail...">
+        <select id="filtro-status">
+          <option value="">Todos os status</option>
+          <option value="ativo">Ativo</option>
+          <option value="vencido">Vencido</option>
+          <option value="pendente">Pendente</option>
+          <option value="suspenso">Suspenso</option>
+        </select>
+        <select id="filtro-plano">
+          <option value="">Todos os planos</option>
+          <option value="demo">Demo 7 dias</option>
+          <option value="mensal">Mensal</option>
+          <option value="anual">Anual</option>
+          <option value="grupo_escolar">Grupo Escolar</option>
+          <option value="conveniada">Conveniada</option>
+        </select>
+        <select id="filtro-uf"><option value="">Todos estados</option></select>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-azul" id="btn-novo-grupo">+ Grupo Escolar</button>
+        <button class="btn btn-primario" id="btn-novo">+ Novo acesso</button>
+      </div>
+    </div>
+
+    <div class="tabela-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-ord="nome">Usuário</th>
+            <th data-ord="local">Local</th>
+            <th data-ord="plano">Plano</th>
+            <th data-ord="status">Status</th>
+            <th data-ord="data_expiracao">Expira em</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-tabela"></tbody>
+      </table>
+      <div class="vazio" id="vazio" style="display:none;">Nenhum usuário encontrado com esses filtros.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO -->
+<div class="modal-bg" id="modal-cad">
+  <div class="modal">
+    <div class="modal-topo"><h3 id="modal-titulo">Novo acesso</h3><button class="fechar" data-action="fechar-cad">&times;</button></div>
+    <div class="modal-corpo">
+      <input type="hidden" id="edit-uid">
+      <div class="grade2">
+        <div class="campo"><label>Nome completo</label><input type="text" id="f-nome" placeholder="Maria Silva"></div>
+        <div class="campo"><label>E-mail</label><input type="email" id="f-email" placeholder="maria@escola.com"></div>
+      </div>
+      <div class="grade2">
+        <div class="campo"><label>CPF <span style="font-weight:400;color:var(--texto-suave);">(opcional)</span></label><input type="text" id="f-cpf" placeholder="000.000.000-00"></div>
+        <div class="campo"><label>Telefone <span style="font-weight:400;color:var(--texto-suave);">(opcional)</span></label><input type="text" id="f-telefone" placeholder="(67) 90000-0000"></div>
+      </div>
+      <div class="grade2">
+        <div class="campo">
+          <label>Estado (UF)</label>
+          <select id="f-uf" data-action="carregar-municipios"><option value="">Selecione...</option></select>
+        </div>
+        <div class="campo">
+          <label>Município</label>
+          <select id="f-municipio"><option value="">Selecione o estado primeiro</option></select>
+          <div class="carregando-mun" id="carregando-mun" style="display:none;">Carregando municípios...</div>
+        </div>
+      </div>
+      <div class="grade2">
+        <div class="campo">
+          <label>Plano</label>
+          <select id="f-plano" data-action="recalcular">
+            <option value="demo">Demo (7 dias grátis)</option>
+            <option value="mensal">Mensal (+30 dias)</option>
+            <option value="anual">Anual (+365 dias)</option>
+            <option value="grupo_escolar">Grupo Escolar (+180 dias)</option>
+            <option value="conveniada">Conveniada (convênio)</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label>Status</label>
+          <select id="f-status">
+            <option value="ativo">Ativo</option>
+            <option value="pendente">Pendente</option>
+            <option value="suspenso">Suspenso</option>
+          </select>
+        </div>
+      </div>
+      <div class="grade2">
+        <div class="campo"><label>Data de início</label><input type="date" id="f-inicio" data-action="recalcular"></div>
+        <div class="campo"><label>Data de expiração</label><input type="date" id="f-expiracao"></div>
+      </div>
+      <div class="info-validade" id="info-validade"></div>
+      <div class="ok-msg" id="cad-msg"></div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn btn-sec" data-action="fechar-cad">Cancelar</button>
+      <button class="btn btn-primario" id="btn-salvar">Salvar acesso</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAGAMENTO -->
+<div class="modal-bg" id="modal-pag">
+  <div class="modal">
+    <div class="modal-topo"><h3>Registrar pagamento</h3><button class="fechar" data-action="fechar-pag">&times;</button></div>
+    <div class="modal-corpo">
+      <input type="hidden" id="pag-uid">
+      <p style="font-size:13px;color:var(--texto-suave);margin-bottom:16px;">Registrando para <b id="pag-nome" style="color:var(--azul);"></b>. O sistema estende a validade conforme o plano.</p>
+      <div class="grade2">
+        <div class="campo"><label>Valor (R$)</label><input type="number" id="pag-valor" placeholder="240.00" step="0.01"></div>
+        <div class="campo"><label>Data do pagamento</label><input type="date" id="pag-data"></div>
+      </div>
+      <div class="campo"><label>Forma</label>
+        <select id="pag-forma">
+          <option value="pix_manual">PIX manual</option>
+          <option value="transferencia">Transferência</option>
+          <option value="dinheiro">Dinheiro</option>
+          <option value="convenio">Convênio (prefeitura)</option>
+        </select>
+      </div>
+      <div class="campo"><label>Comprovante / referência</label><input type="text" id="pag-comprovante" placeholder="PIX #4421"></div>
+      <div class="info-validade">Nova expiração: <b id="pag-nova-validade">—</b></div>
+      <div class="ok-msg" id="pag-msg"></div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn btn-sec" data-action="fechar-pag">Cancelar</button>
+      <button class="btn btn-primario" id="btn-reg-pag">Registrar e renovar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTORICO -->
+<div class="modal-bg" id="modal-hist">
+  <div class="modal">
+    <div class="modal-topo"><h3>Histórico de pagamentos</h3><button class="fechar" data-action="fechar-hist">&times;</button></div>
+    <div class="modal-corpo">
+      <p style="font-size:13px;color:var(--texto-suave);margin-bottom:12px;" id="hist-nome"></p>
+      <div id="hist-lista"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO/EDIÇÃO DE GRUPO -->
+<div class="modal-bg" id="modal-grupo">
+  <div class="modal">
+    <div class="modal-topo"><h3 id="grupo-titulo">Novo Grupo Escolar</h3><button class="fechar" data-action="fechar-grupo">&times;</button></div>
+    <div class="modal-corpo">
+      <input type="hidden" id="g-id">
+
+      <!-- CNPJ com busca -->
+      <div class="campo">
+        <label>CNPJ <span style="font-weight:400;color:var(--texto-suave);">(digite e clique em buscar)</span></label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="g-cnpj" placeholder="00.000.000/0000-00" style="flex:1;">
+          <button class="btn btn-azul btn-mini" id="btn-busca-cnpj" style="white-space:nowrap;">🔍 Buscar</button>
+        </div>
+        <div class="carregando-mun" id="cnpj-status" style="display:none;"></div>
+      </div>
+
+      <div class="grade2">
+        <div class="campo"><label>Razão social</label><input type="text" id="g-razao" placeholder="Preenchido pelo CNPJ"></div>
+        <div class="campo"><label>Nome fantasia / da escola</label><input type="text" id="g-nome" placeholder="Escola Municipal Master"></div>
+      </div>
+      <div class="grade2">
+        <div class="campo"><label>Telefone</label><input type="text" id="g-telefone" placeholder="(67) 0000-0000"></div>
+        <div class="campo"><label>E-mail do responsável</label><input type="email" id="g-gestor" placeholder="diretor@escola.com"></div>
+      </div>
+      <div class="grade2">
+        <div class="campo"><label>Responsável (nome)</label><input type="text" id="g-resp-nome" placeholder="João Diretor"></div>
+        <div class="campo"><label>Cargo do responsável</label><input type="text" id="g-resp-cargo" placeholder="Diretor / Secretário"></div>
+      </div>
+
+      <!-- Endereço -->
+      <div class="grade2">
+        <div class="campo"><label>Estado (UF)</label><select id="g-uf" data-action="carregar-municipios-grupo"><option value="">Selecione...</option></select></div>
+        <div class="campo"><label>Município</label><select id="g-municipio"><option value="">Selecione o estado primeiro</option></select></div>
+      </div>
+      <div class="campo"><label>Endereço (logradouro, nº, bairro, CEP)</label><input type="text" id="g-endereco" placeholder="Rua X, 100, Centro, 79000-000"></div>
+
+      <!-- Contrato -->
+      <div class="grade2">
+        <div class="campo"><label>Licenças contratadas</label><input type="number" id="g-vagas" placeholder="30" min="1"></div>
+        <div class="campo"><label>Status</label>
+          <select id="g-status"><option value="ativo">Ativo</option><option value="suspenso">Suspenso</option></select>
+        </div>
+      </div>
+      <div class="grade2">
+        <div class="campo"><label>Início do contrato</label><input type="date" id="g-inicio"></div>
+        <div class="campo"><label>Fim do contrato</label><input type="date" id="g-expiracao"></div>
+      </div>
+      <div class="info-validade">A validade vale para <b>todos</b> os professores do grupo. Renovar o grupo renova todos de uma vez.</div>
+      <div class="ok-msg" id="grupo-msg"></div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn btn-sec" data-action="fechar-grupo">Cancelar</button>
+      <button class="btn btn-primario" id="btn-salvar-grupo">Salvar grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GERENCIAR VAGAS -->
+<div class="modal-bg" id="modal-vagas">
+  <div class="modal largo">
+    <div class="modal-topo"><h3 id="vagas-titulo">Gerenciar vagas</h3><button class="fechar" data-action="fechar-vagas">&times;</button></div>
+    <div class="modal-corpo">
+      <input type="hidden" id="v-grupo-id">
+      <div class="grupo-info" id="vagas-resumo"></div>
+
+      <div class="add-prof-box">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px;color:var(--verde);">Adicionar professor (cadastro completo)</div>
+        <div class="grade2">
+          <div class="campo" style="margin-bottom:10px;"><label>Nome</label><input type="text" id="v-nome" placeholder="Maria Silva"></div>
+          <div class="campo" style="margin-bottom:10px;"><label>E-mail</label><input type="email" id="v-email" placeholder="maria@escola.com"></div>
+        </div>
+        <div class="grade2">
+          <div class="campo" style="margin-bottom:10px;"><label>CPF</label><input type="text" id="v-cpf" placeholder="000.000.000-00"></div>
+          <div class="campo" style="margin-bottom:10px;"><label>Telefone</label><input type="text" id="v-telefone" placeholder="(67) 90000-0000"></div>
+        </div>
+        <button class="btn btn-primario btn-mini" id="btn-add-prof">+ Adicionar professor</button>
+        <div style="margin-top:14px;border-top:1px dashed #bbf7d0;padding-top:12px;">
+          <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Modo rápido: cole vários e-mails (um por linha)</label>
+          <textarea id="v-lote" placeholder="maria@escola.com&#10;joao@escola.com&#10;ana@escola.com"></textarea>
+          <div style="font-size:11px;color:var(--texto-suave);margin-top:4px;">Entram só com e-mail. Você completa CPF/telefone depois clicando em editar.</div>
+          <button class="btn btn-sec btn-mini" id="btn-add-lote" style="margin-top:8px;">Adicionar lista</button>
+        </div>
+        <div class="erro-msg" id="vagas-erro" style="text-align:left;"></div>
+      </div>
+
+      <div style="font-weight:600;font-size:13px;margin-bottom:10px;color:var(--azul);">Professores no grupo</div>
+      <div id="lista-profs"></div>
+    </div>
+    <div class="modal-rodape">
+      <button class="btn btn-sec" data-action="fechar-vagas">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMA -->
+<div class="modal-bg" id="modal-confirma">
+  <div class="modal pequeno">
+    <div class="modal-topo"><h3 id="confirma-titulo">Confirmar</h3><button class="fechar" data-action="fechar-confirma">&times;</button></div>
+    <div class="modal-corpo"><p id="confirma-texto" style="font-size:14px;"></p></div>
+    <div class="modal-rodape">
+      <button class="btn btn-sec" data-action="fechar-confirma">Cancelar</button>
+      <button class="btn btn-perigo" id="btn-confirma-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// =====================================================================
+// CONFIGURAÇÃO FIREBASE — projeto pde-acessos
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAY6XEymSpv7KOJS8UagLwunFA9C8pR3TQ",
+  authDomain: "pde-acessos.firebaseapp.com",
+  projectId: "pde-acessos",
+  storageBucket: "pde-acessos.firebasestorage.app",
+  messagingSenderId: "927791850957",
+  appId: "1:927791850957:web:7e5a0d40ab9dfc90781084"
+};
+
+const MODO_DEMO = !firebaseConfig.projectId;
+
+let auth, db, fb = {};
+if(!MODO_DEMO){
+  const appMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+  const authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+  const fsMod   = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  const app = appMod.initializeApp(firebaseConfig);
+  auth = authMod.getAuth(app);
+  db   = fsMod.getFirestore(app);
+  fb = {
+    onAuthStateChanged: authMod.onAuthStateChanged,
+    signIn: authMod.signInWithEmailAndPassword,
+    signOut: authMod.signOut,
+    collection: fsMod.collection, doc: fsMod.doc,
+    getDocs: fsMod.getDocs, setDoc: fsMod.setDoc, addDoc: fsMod.addDoc,
+    deleteDoc: fsMod.deleteDoc, serverTimestamp: fsMod.serverTimestamp
+  };
+}
+
+// =====================================================================
+// ESTADOS DO BRASIL (27 UFs embutidas — municípios vêm do IBGE)
+// =====================================================================
+const UFS = [
+  ["AC","Acre"],["AL","Alagoas"],["AP","Amapá"],["AM","Amazonas"],["BA","Bahia"],
+  ["CE","Ceará"],["DF","Distrito Federal"],["ES","Espírito Santo"],["GO","Goiás"],
+  ["MA","Maranhão"],["MT","Mato Grosso"],["MS","Mato Grosso do Sul"],["MG","Minas Gerais"],
+  ["PA","Pará"],["PB","Paraíba"],["PR","Paraná"],["PE","Pernambuco"],["PI","Piauí"],
+  ["RJ","Rio de Janeiro"],["RN","Rio Grande do Norte"],["RS","Rio Grande do Sul"],
+  ["RO","Rondônia"],["RR","Roraima"],["SC","Santa Catarina"],["SP","São Paulo"],
+  ["SE","Sergipe"],["TO","Tocantins"]
+];
+
+// cache de municípios já buscados (evita rechamar o IBGE)
+const cacheMun = {};
+
+async function buscarMunicipios(uf){
+  if(cacheMun[uf]) return cacheMun[uf];
+  try{
+    const r = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+    const dados = await r.json();
+    const nomes = dados.map(m => m.nome).sort((a,b)=>a.localeCompare(b,"pt-BR"));
+    cacheMun[uf] = nomes;
+    return nomes;
+  }catch(e){
+    return []; // fallback: deixa digitar livre se IBGE falhar
+  }
+}
+
+// =====================================================================
+// DADOS DEMO
+// =====================================================================
+let usuarios = MODO_DEMO ? [
+  {uid:"u1",nome:"Maria Silva",email:"maria@escola.com",uf:"MS",municipio:"Campo Grande",plano:"anual",status_acesso:"ativo",data_inicio:"2026-01-10",data_expiracao:"2027-01-10",forma_pagamento:"pix_manual",valor:240,pagamentos:[{data:"2026-01-10",valor:240,forma:"pix_manual",comprovante:"PIX #1180",referente_a:"Anual"}]},
+  {uid:"u2",nome:"João Pereira",email:"joao@escola.com",uf:"MS",municipio:"Dourados",plano:"mensal",status_acesso:"ativo",data_inicio:"2026-05-20",data_expiracao:"2026-06-20",forma_pagamento:"pix_manual",valor:29.9,pagamentos:[]},
+  {uid:"u3",nome:"Secretaria de Sidrolândia",email:"educacao@sidrolandia.ms.gov.br",uf:"MS",municipio:"Sidrolândia",plano:"conveniada",status_acesso:"ativo",data_inicio:"2026-03-01",data_expiracao:"2026-12-31",forma_pagamento:"convenio",valor:0,pagamentos:[]},
+  {uid:"u4",nome:"Prof. Demo Teste",email:"demo@teste.com",uf:"SP",municipio:"São Paulo",plano:"demo",status_acesso:"ativo",data_inicio:hoje(),data_expiracao:addDias(hoje(),7),forma_pagamento:"cortesia",valor:0,pagamentos:[]}
+] : [];
+
+// grupos escolares (estrutura pai/filho)
+let grupos = MODO_DEMO ? [
+  {id:"g1",nome:"Escola Municipal Master",email_gestor:"diretor@master.edu.br",uf:"MS",municipio:"Campo Grande",plano:"grupo_escolar",vagas_total:30,status_acesso:"ativo",data_inicio:"2026-03-01",data_expiracao:"2026-08-28",professores:[
+    {id:"p1",nome:"Carla Souza",email:"carla@master.edu.br"},
+    {id:"p2",nome:"Pedro Lima",email:"pedro@master.edu.br"},
+    {id:"p3",nome:"Joana Reis",email:"joana@master.edu.br"}
+  ]}
+] : [];
+const PLANOS = {
+  demo:          {nome:"Demo 7 dias",   dias:7,   demo:true},
+  mensal:        {nome:"Mensal",        dias:30},
+  anual:         {nome:"Anual",         dias:365},
+  grupo_escolar: {nome:"Grupo Escolar", dias:180},
+  conveniada:    {nome:"Conveniada",    dias:null}
+};
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+function $(id){return document.getElementById(id);}
+function hoje(){return new Date().toISOString().slice(0,10);}
+function addDias(dataISO,dias){const d=new Date(dataISO+"T00:00:00");d.setDate(d.getDate()+dias);return d.toISOString().slice(0,10);}
+function diasEntre(dataISO){if(!dataISO)return 9999;const alvo=new Date(dataISO+"T00:00:00");const ag=new Date(hoje()+"T00:00:00");return Math.round((alvo-ag)/86400000);}
+function fmtData(iso){if(!iso)return"—";const[a,m,d]=iso.split("-");return`${d}/${m}/${a}`;}
+function fmtMoeda(v){return(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+
+function statusEfetivo(u){
+  if(u.status_acesso==="suspenso"||u.status_acesso==="pendente")return u.status_acesso;
+  if(u.data_expiracao&&diasEntre(u.data_expiracao)<0)return"vencido";
+  return u.status_acesso;
+}
+
+// MRR: receita recorrente mensal estimada (mensal=valor, anual=valor/12)
+function calcMRR(){
+  let mrr=0;
+  usuarios.forEach(u=>{
+    if(statusEfetivo(u)!=="ativo")return;
+    if(u.plano==="mensal")mrr+=(u.valor||0);
+    else if(u.plano==="anual")mrr+=(u.valor||0)/12;
+    else if(u.plano==="grupo_escolar")mrr+=(u.valor||0)/6; // grupo = 180 dias = 6 meses
+  });
+  return mrr;
+}
+
+// total faturado no mês corrente (soma pagamentos do mês)
+function calcFaturadoMes(){
+  const mesAtual=hoje().slice(0,7);
+  let total=0;
+  usuarios.forEach(u=>{
+    (u.pagamentos||[]).forEach(p=>{
+      if(p.data&&p.data.slice(0,7)===mesAtual)total+=(p.valor||0);
+    });
+  });
+  return total;
+}
+
+// =====================================================================
+// RENDER
+// =====================================================================
+function renderResumo(){
+  const total=usuarios.length;
+  const ativos=usuarios.filter(u=>statusEfetivo(u)==="ativo").length;
+  const aVencer=usuarios.filter(u=>{const dd=diasEntre(u.data_expiracao);return statusEfetivo(u)==="ativo"&&dd>=0&&dd<=7;}).length;
+  const vencidos=usuarios.filter(u=>statusEfetivo(u)==="vencido").length;
+  const demos=usuarios.filter(u=>u.plano==="demo"&&statusEfetivo(u)==="ativo").length;
+  const totGrupos=grupos.length;
+  const totProfsGrupo=grupos.reduce((s,g)=>s+(g.professores||[]).length,0);
+
+  $("resumo").innerHTML=`
+    <div class="card-num"><div class="label">Acessos indiv.</div><div class="valor">${total}</div></div>
+    <div class="card-num"><div class="label">Grupos / profs</div><div class="valor" style="font-size:20px;">${totGrupos} <span style="font-size:13px;color:var(--texto-suave);">(${totProfsGrupo} profs)</span></div></div>
+    <div class="card-num"><div class="label">Ativos indiv.</div><div class="valor">${ativos}</div></div>
+    <div class="card-num alerta"><div class="label">Demos ativos</div><div class="valor">${demos}</div></div>
+    <div class="card-num alerta"><div class="label">Vencem em 7d</div><div class="valor">${aVencer}</div></div>
+    <div class="card-num critico"><div class="label">Vencidos</div><div class="valor">${vencidos}</div></div>
+    <div class="card-num receita"><div class="label">Faturado no mês</div><div class="valor" style="font-size:18px;">${fmtMoeda(calcFaturadoMes())}</div></div>
+    <div class="card-num receita"><div class="label">MRR estimado</div><div class="valor" style="font-size:18px;">${fmtMoeda(calcMRR())}</div></div>
+  `;
+}
+
+let ordenacao={campo:"data_expiracao",asc:true};
+
+function renderTabela(){
+  const termo=$("busca").value.toLowerCase().trim();
+  const fStatus=$("filtro-status").value;
+  const fPlano=$("filtro-plano").value;
+  const fUf=$("filtro-uf").value;
+
+  let lista=usuarios.filter(u=>{
+    const bate=(u.nome+u.email).toLowerCase().includes(termo);
+    const st=statusEfetivo(u);
+    return bate && (!fStatus||st===fStatus) && (!fPlano||u.plano===fPlano) && (!fUf||u.uf===fUf);
+  });
+
+  lista.sort((a,b)=>{
+    let va,vb;
+    if(ordenacao.campo==="status"){va=statusEfetivo(a);vb=statusEfetivo(b);}
+    else if(ordenacao.campo==="local"){va=(a.uf||"")+(a.municipio||"");vb=(b.uf||"")+(b.municipio||"");}
+    else{va=a[ordenacao.campo]||"";vb=b[ordenacao.campo]||"";}
+    return ordenacao.asc?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+
+  const linhasIndiv=lista.map(u=>{
+    const st=statusEfetivo(u);
+    const dd=diasEntre(u.data_expiracao);
+    let cv="";
+    if(st==="vencido")cv="venc-passou";else if(dd>=0&&dd<=7)cv="venc-prox";
+    const ehDemo=u.plano==="demo";
+    const local=u.municipio?`${u.municipio}/${u.uf||""}`:(u.uf||"—");
+
+    return`<tr>
+      <td><div class="nome-cel">${u.nome}</div><div class="email-cel">${u.email}</div></td>
+      <td class="local-cel">${local}</td>
+      <td><span class="badge ${ehDemo?'badge-demo':'badge-plano'}">${PLANOS[u.plano]?.nome||u.plano}</span></td>
+      <td><span class="badge badge-${st}">${st}</span></td>
+      <td class="${cv}">${fmtData(u.data_expiracao)}${st==="ativo"&&dd>=0&&dd<=7?` (${dd}d)`:""}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-primario btn-mini" data-action="pagar" data-uid="${u.uid}">$ Pagar</button>
+        <button class="btn btn-sec btn-mini" data-action="editar" data-uid="${u.uid}">Editar</button>
+        <button class="btn btn-sec btn-mini" data-action="hist" data-uid="${u.uid}">Hist</button>
+        ${st==="suspenso"
+          ?`<button class="btn btn-sec btn-mini" data-action="reativar" data-uid="${u.uid}">Reativar</button>`
+          :`<button class="btn btn-sec btn-mini" data-action="suspender" data-uid="${u.uid}">Suspender</button>`}
+        <button class="btn btn-perigo btn-mini" data-action="excluir" data-uid="${u.uid}">Excluir</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  const linhasGrupos=renderLinhasGrupos();
+  const htmlFinal=linhasGrupos+linhasIndiv;
+  $("vazio").style.display=htmlFinal.trim()?"none":"block";
+  $("corpo-tabela").innerHTML=htmlFinal;
+}
+
+function renderTudo(){renderResumo();renderTabela();}
+
+// =====================================================================
+// POPULAR SELECTS DE UF
+// =====================================================================
+function popularUFs(){
+  const ops='<option value="">Selecione...</option>'+UFS.map(([s,n])=>`<option value="${s}">${s} · ${n}</option>`).join("");
+  $("f-uf").innerHTML=ops;
+  $("g-uf").innerHTML=ops;
+  $("filtro-uf").innerHTML='<option value="">Todos estados</option>'+UFS.map(([s])=>`<option value="${s}">${s}</option>`).join("");
+}
+
+async function carregarMunicipios(){
+  const uf=$("f-uf").value;
+  const sel=$("f-municipio");
+  if(!uf){sel.innerHTML='<option value="">Selecione o estado primeiro</option>';return;}
+  $("carregando-mun").style.display="block";
+  sel.innerHTML='<option value="">Carregando...</option>';
+  const mun=await buscarMunicipios(uf);
+  $("carregando-mun").style.display="none";
+  if(mun.length){
+    sel.innerHTML='<option value="">Selecione...</option>'+mun.map(m=>`<option value="${m}">${m}</option>`).join("");
+  }else{
+    sel.innerHTML='<option value="">IBGE indisponível — digite no campo abaixo</option>';
+  }
+}
+
+// =====================================================================
+// MODAL CADASTRO
+// =====================================================================
+async function abrirCad(uid){
+  $("cad-msg").textContent="";
+  if(uid){
+    const u=usuarios.find(x=>x.uid===uid);
+    $("modal-titulo").textContent="Editar acesso";
+    $("edit-uid").value=u.uid;
+    $("f-nome").value=u.nome;$("f-email").value=u.email;
+    $("f-cpf").value=u.cpf||"";$("f-telefone").value=u.telefone||"";
+    $("f-uf").value=u.uf||"";
+    $("f-plano").value=u.plano;$("f-status").value=u.status_acesso==="vencido"?"ativo":u.status_acesso;
+    $("f-inicio").value=u.data_inicio||hoje();$("f-expiracao").value=u.data_expiracao||"";
+    if(u.uf){await carregarMunicipios();$("f-municipio").value=u.municipio||"";}
+  }else{
+    $("modal-titulo").textContent="Novo acesso";
+    $("edit-uid").value="";
+    $("f-nome").value=$("f-email").value=$("f-cpf").value=$("f-telefone").value="";
+    $("f-uf").value="";$("f-municipio").innerHTML='<option value="">Selecione o estado primeiro</option>';
+    $("f-plano").value="demo";$("f-status").value="ativo";
+    $("f-inicio").value=hoje();$("f-expiracao").value=addDias(hoje(),7);
+  }
+  atualizarInfoValidade();
+  $("modal-cad").classList.add("aberto");
+}
+
+function atualizarInfoValidade(){
+  const plano=$("f-plano").value;
+  const inicio=$("f-inicio").value||hoje();
+  const cfg=PLANOS[plano];
+  if(cfg.demo){
+    const exp=addDias(inicio,cfg.dias);
+    $("f-expiracao").value=exp;
+    $("info-validade").className="info-demo";
+    $("info-validade").innerHTML=`🎁 <b>Demonstração gratuita</b>: 7 dias a partir de ${fmtData(inicio)}. Expira em <b>${fmtData(exp)}</b> e o acesso é bloqueado automaticamente. Use para apresentações a secretarias e escolas.`;
+  }else if(cfg.dias){
+    const exp=addDias(inicio,cfg.dias);
+    $("f-expiracao").value=exp;
+    $("info-validade").className="info-validade";
+    $("info-validade").innerHTML=`Plano <b>${cfg.nome}</b>: ${cfg.dias} dias a partir de ${fmtData(inicio)}. Expira em <b>${fmtData(exp)}</b>.`;
+  }else{
+    $("info-validade").className="info-validade";
+    $("info-validade").innerHTML=`Plano <b>${cfg.nome}</b>: defina a expiração manualmente (casar com o prazo do contrato/convênio).`;
+  }
+}
+
+async function salvarCad(){
+  const uid=$("edit-uid").value;
+  const dados={
+    nome:$("f-nome").value.trim(),
+    email:$("f-email").value.trim().toLowerCase(),
+    cpf:$("f-cpf").value.trim(),
+    telefone:$("f-telefone").value.trim(),
+    uf:$("f-uf").value,
+    municipio:$("f-municipio").value,
+    plano:$("f-plano").value,
+    status_acesso:$("f-status").value,
+    data_inicio:$("f-inicio").value,
+    data_expiracao:$("f-expiracao").value,
+    forma_pagamento:uid?(usuarios.find(x=>x.uid===uid).forma_pagamento||"pix_manual"):($("f-plano").value==="demo"?"cortesia":"pix_manual"),
+    asaas_customer_id:null,asaas_subscription_id:null
+  };
+  if(!dados.nome||!dados.email){
+    $("cad-msg").style.color="var(--vermelho)";$("cad-msg").textContent="Preencha nome e e-mail.";return;
+  }
+  if(MODO_DEMO){
+    if(uid)Object.assign(usuarios.find(x=>x.uid===uid),dados);
+    else usuarios.push({uid:"u"+Date.now(),...dados,valor:0,pagamentos:[]});
+  }else{
+    const idDoc=uid||dados.email.replace(/[^a-z0-9]/g,"_");
+    await fb.setDoc(fb.doc(db,"usuarios",idDoc),{...dados,atualizado_em:fb.serverTimestamp()},{merge:true});
+    await carregarFirestore();
+  }
+  fecharCad();renderTudo();
+}
+function fecharCad(){$("modal-cad").classList.remove("aberto");}
+
+// =====================================================================
+// PAGAMENTO
+// =====================================================================
+let pagUidAtual=null;
+function abrirPag(uid){
+  const u=usuarios.find(x=>x.uid===uid);
+  pagUidAtual=uid;
+  $("pag-uid").value=uid;$("pag-nome").textContent=u.nome;
+  $("pag-valor").value=u.valor||"";$("pag-data").value=hoje();
+  $("pag-forma").value=u.forma_pagamento==="cortesia"?"pix_manual":(u.forma_pagamento||"pix_manual");
+  $("pag-comprovante").value="";$("pag-msg").textContent="";
+  calcularNovaValidade();
+  $("modal-pag").classList.add("aberto");
+}
+function calcularNovaValidade(){
+  const u=usuarios.find(x=>x.uid===pagUidAtual);if(!u)return;
+  const cfg=PLANOS[u.plano];
+  const base=(u.data_expiracao&&diasEntre(u.data_expiracao)>0)?u.data_expiracao:hoje();
+  $("pag-nova-validade").textContent=cfg.dias?fmtData(addDias(base,cfg.dias)):"manual (convênio)";
+}
+async function registrarPag(){
+  const u=usuarios.find(x=>x.uid===pagUidAtual);
+  const cfg=PLANOS[u.plano];
+  const valor=parseFloat($("pag-valor").value)||0;
+  const pag={data:$("pag-data").value,valor,forma:$("pag-forma").value,comprovante:$("pag-comprovante").value.trim(),referente_a:`Plano ${cfg.nome}`};
+  const base=(u.data_expiracao&&diasEntre(u.data_expiracao)>0)?u.data_expiracao:hoje();
+  const novaExp=cfg.dias?addDias(base,cfg.dias):u.data_expiracao;
+  if(MODO_DEMO){
+    u.pagamentos=u.pagamentos||[];u.pagamentos.push(pag);
+    u.data_expiracao=novaExp;u.status_acesso="ativo";u.valor=valor;u.forma_pagamento=pag.forma;
+  }else{
+    await fb.addDoc(fb.collection(db,"usuarios",u.uid,"pagamentos"),{...pag,criado_em:fb.serverTimestamp()});
+    await fb.setDoc(fb.doc(db,"usuarios",u.uid),{data_expiracao:novaExp,status_acesso:"ativo",valor,forma_pagamento:pag.forma},{merge:true});
+    await carregarFirestore();
+  }
+  fecharPag();renderTudo();
+}
+function fecharPag(){$("modal-pag").classList.remove("aberto");}
+
+// =====================================================================
+// HISTORICO
+// =====================================================================
+function abrirHist(uid){
+  const u=usuarios.find(x=>x.uid===uid);
+  $("hist-nome").textContent=`${u.nome} · ${u.email}`;
+  const pags=u.pagamentos||[];
+  $("hist-lista").innerHTML=pags.length?pags.map(p=>`
+    <div class="hist-item">
+      <div><div>${fmtData(p.data)} · ${p.forma}</div><div style="font-size:12px;color:var(--texto-suave);">${p.referente_a||""} ${p.comprovante?"· "+p.comprovante:""}</div></div>
+      <div class="hist-valor">${fmtMoeda(p.valor)}</div>
+    </div>`).join(""):'<p style="color:var(--texto-suave);font-size:13px;">Nenhum pagamento registrado.</p>';
+  $("modal-hist").classList.add("aberto");
+}
+function fecharHist(){$("modal-hist").classList.remove("aberto");}
+
+// =====================================================================
+// CONFIRMAÇÃO (excluir / suspender)
+// =====================================================================
+let acaoConfirma=null;
+function pedirConfirma(titulo,texto,callback){
+  $("confirma-titulo").textContent=titulo;
+  $("confirma-texto").innerHTML=texto;
+  acaoConfirma=callback;
+  $("modal-confirma").classList.add("aberto");
+}
+function fecharConfirma(){$("modal-confirma").classList.remove("aberto");acaoConfirma=null;}
+
+async function excluirUsuario(uid){
+  const u=usuarios.find(x=>x.uid===uid);
+  pedirConfirma("Excluir acesso",`Tem certeza que deseja excluir <b>${u.nome}</b> e todo o histórico de pagamentos? Esta ação não pode ser desfeita.`,async()=>{
+    if(MODO_DEMO){usuarios=usuarios.filter(x=>x.uid!==uid);}
+    else{await fb.deleteDoc(fb.doc(db,"usuarios",uid));await carregarFirestore();}
+    fecharConfirma();renderTudo();
+  });
+}
+async function mudarStatus(uid,novo){
+  const u=usuarios.find(x=>x.uid===uid);
+  if(MODO_DEMO){u.status_acesso=novo;}
+  else{await fb.setDoc(fb.doc(db,"usuarios",uid),{status_acesso:novo},{merge:true});await carregarFirestore();}
+  renderTudo();
+}
+
+// =====================================================================
+// BUSCA DE CNPJ (BrasilAPI — pública, sem chave)
+// =====================================================================
+async function buscarCNPJ(){
+  const bruto=$("g-cnpj").value.replace(/\D/g,"");
+  const status=$("cnpj-status");
+  if(bruto.length!==14){
+    status.style.display="block";status.style.color="var(--vermelho)";
+    status.textContent="CNPJ deve ter 14 dígitos.";return;
+  }
+  status.style.display="block";status.style.color="var(--texto-suave)";
+  status.textContent="Buscando na Receita...";
+  try{
+    const r=await fetch(`https://brasilapi.com.br/api/cnpj/v1/${bruto}`);
+    if(!r.ok)throw new Error("nao encontrado");
+    const d=await r.json();
+    // preenche os campos
+    $("g-razao").value=d.razao_social||"";
+    $("g-nome").value=d.nome_fantasia||d.razao_social||"";
+    const tel=d.ddd_telefone_1||"";
+    $("g-telefone").value=tel?tel.replace(/(\d{2})(\d+)/,"($1) $2"):"";
+    // endereço
+    const end=[d.descricao_tipo_de_logradouro,d.logradouro,d.numero,d.bairro,d.cep].filter(Boolean).join(", ");
+    $("g-endereco").value=end;
+    // UF e município (preenche UF e tenta achar o município)
+    if(d.uf){
+      $("g-uf").value=d.uf;
+      await carregarMunicipiosGrupo();
+      // BrasilAPI devolve município em maiúsculas; tenta casar
+      const mun=(d.municipio||"").toLowerCase();
+      const opts=[...$("g-municipio").options];
+      const achou=opts.find(o=>o.value.toLowerCase()===mun);
+      if(achou)$("g-municipio").value=achou.value;
+    }
+    status.style.color="var(--verde)";
+    const sit=d.descricao_situacao_cadastral||"";
+    status.textContent=`✓ ${d.razao_social}${sit?" · "+sit:""}`;
+  }catch(e){
+    status.style.color="var(--vermelho)";
+    status.textContent="CNPJ não encontrado ou serviço indisponível. Preencha manualmente.";
+  }
+}
+
+
+function statusEfetivoGrupo(g){
+  if(g.status_acesso==="suspenso")return"suspenso";
+  if(g.data_expiracao&&diasEntre(g.data_expiracao)<0)return"vencido";
+  return"ativo";
+}
+
+function renderLinhasGrupos(){
+  const termo=$("busca").value.toLowerCase().trim();
+  const fStatus=$("filtro-status").value;
+  const fPlano=$("filtro-plano").value;
+  const fUf=$("filtro-uf").value;
+
+  // grupo só aparece se filtro de plano for vazio ou "grupo_escolar"
+  if(fPlano && fPlano!=="grupo_escolar") return "";
+
+  let lista=grupos.filter(g=>{
+    const bate=(g.nome+(g.email_gestor||"")).toLowerCase().includes(termo);
+    const st=statusEfetivoGrupo(g);
+    return bate && (!fStatus||st===fStatus) && (!fUf||g.uf===fUf);
+  });
+
+  return lista.map(g=>{
+    const st=statusEfetivoGrupo(g);
+    const usadas=(g.professores||[]).length;
+    const total=g.vagas_total||0;
+    const dd=diasEntre(g.data_expiracao);
+    let cv="";if(st==="vencido")cv="venc-passou";else if(dd>=0&&dd<=7)cv="venc-prox";
+    const pct=total?Math.round(usadas/total*100):0;
+    let classeVaga="";if(usadas>=total)classeVaga="cheio";else if(pct>=80)classeVaga="quase";
+    const local=g.municipio?`${g.municipio}/${g.uf}`:(g.uf||"—");
+
+    return`<tr style="background:#fbfdff;">
+      <td><div class="nome-cel">🏫 ${g.nome}</div><div class="email-cel">${g.email_gestor||""}</div></td>
+      <td class="local-cel">${local}</td>
+      <td><span class="badge badge-grupo">Grupo Escolar</span></td>
+      <td><span class="badge badge-${st}">${st}</span></td>
+      <td class="${cv}">${fmtData(g.data_expiracao)}${st==="ativo"&&dd>=0&&dd<=7?` (${dd}d)`:""}</td>
+      <td style="white-space:nowrap;">
+        <span class="vagas-pill ${classeVaga}">${usadas}/${total} vagas</span>
+        <button class="btn btn-azul btn-mini" data-action="vagas" data-gid="${g.id}">Gerenciar vagas</button>
+        <button class="btn btn-sec btn-mini" data-action="editar-grupo" data-gid="${g.id}">Editar</button>
+        ${st==="suspenso"
+          ?`<button class="btn btn-sec btn-mini" data-action="reativar-grupo" data-gid="${g.id}">Reativar</button>`
+          :`<button class="btn btn-sec btn-mini" data-action="suspender-grupo" data-gid="${g.id}">Suspender</button>`}
+        <button class="btn btn-perigo btn-mini" data-action="excluir-grupo" data-gid="${g.id}">Excluir</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+// ---- cadastro/edição de grupo ----
+async function abrirGrupo(gid){
+  $("grupo-msg").textContent="";$("cnpj-status").style.display="none";
+  if(gid){
+    const g=grupos.find(x=>x.id===gid);
+    $("grupo-titulo").textContent="Editar Grupo Escolar";
+    $("g-id").value=g.id;
+    $("g-cnpj").value=g.cnpj||"";$("g-razao").value=g.razao_social||"";
+    $("g-nome").value=g.nome;$("g-telefone").value=g.telefone||"";
+    $("g-gestor").value=g.email_gestor||"";
+    $("g-resp-nome").value=g.responsavel_nome||"";$("g-resp-cargo").value=g.responsavel_cargo||"";
+    $("g-endereco").value=g.endereco||"";
+    $("g-uf").value=g.uf||"";$("g-vagas").value=g.vagas_total;$("g-status").value=g.status_acesso;
+    $("g-inicio").value=g.data_inicio||hoje();$("g-expiracao").value=g.data_expiracao||"";
+    if(g.uf){await carregarMunicipiosGrupo();$("g-municipio").value=g.municipio||"";}
+  }else{
+    $("grupo-titulo").textContent="Novo Grupo Escolar";
+    $("g-id").value="";
+    ["g-cnpj","g-razao","g-nome","g-telefone","g-gestor","g-resp-nome","g-resp-cargo","g-endereco"].forEach(id=>$(id).value="");
+    $("g-uf").value="";$("g-municipio").innerHTML='<option value="">Selecione o estado primeiro</option>';
+    $("g-vagas").value="30";$("g-status").value="ativo";
+    $("g-inicio").value=hoje();$("g-expiracao").value=addDias(hoje(),180);
+  }
+  $("modal-grupo").classList.add("aberto");
+}
+function fecharGrupo(){$("modal-grupo").classList.remove("aberto");}
+
+async function carregarMunicipiosGrupo(){
+  const uf=$("g-uf").value;const sel=$("g-municipio");
+  if(!uf){sel.innerHTML='<option value="">Selecione o estado primeiro</option>';return;}
+  sel.innerHTML='<option value="">Carregando...</option>';
+  const mun=await buscarMunicipios(uf);
+  sel.innerHTML=mun.length?'<option value="">Selecione...</option>'+mun.map(m=>`<option value="${m}">${m}</option>`).join(""):'<option value="">IBGE indisponível</option>';
+}
+
+async function salvarGrupo(){
+  const gid=$("g-id").value;
+  const dados={
+    cnpj:$("g-cnpj").value.trim(),
+    razao_social:$("g-razao").value.trim(),
+    nome:$("g-nome").value.trim(),
+    telefone:$("g-telefone").value.trim(),
+    email_gestor:$("g-gestor").value.trim().toLowerCase(),
+    responsavel_nome:$("g-resp-nome").value.trim(),
+    responsavel_cargo:$("g-resp-cargo").value.trim(),
+    endereco:$("g-endereco").value.trim(),
+    uf:$("g-uf").value,municipio:$("g-municipio").value,
+    plano:"grupo_escolar",
+    vagas_total:parseInt($("g-vagas").value)||0,
+    status_acesso:$("g-status").value,
+    data_inicio:$("g-inicio").value,data_expiracao:$("g-expiracao").value
+  };
+  if(!dados.nome||dados.vagas_total<1){
+    $("grupo-msg").style.color="var(--vermelho)";$("grupo-msg").textContent="Preencha o nome e o número de licenças.";return;
+  }
+  if(MODO_DEMO){
+    if(gid){const g=grupos.find(x=>x.id===gid);Object.assign(g,dados);}
+    else grupos.push({id:"g"+Date.now(),...dados,professores:[]});
+  }else{
+    const idDoc=gid||dados.nome.toLowerCase().replace(/[^a-z0-9]/g,"_")+"_"+Date.now();
+    await fb.setDoc(fb.doc(db,"grupos",idDoc),{...dados,atualizado_em:fb.serverTimestamp()},{merge:true});
+    await carregarFirestore();
+  }
+  fecharGrupo();renderTudo();
+}
+
+// ---- gerenciar vagas ----
+let grupoAtual=null;
+function abrirVagas(gid){
+  grupoAtual=gid;
+  $("v-grupo-id").value=gid;
+  $("v-nome").value=$("v-email").value=$("v-lote").value="";
+  $("vagas-erro").textContent="";
+  renderVagas();
+  $("modal-vagas").classList.add("aberto");
+}
+function fecharVagas(){$("modal-vagas").classList.remove("aberto");grupoAtual=null;}
+
+function renderVagas(){
+  const g=grupos.find(x=>x.id===grupoAtual);if(!g)return;
+  const usadas=(g.professores||[]).length;
+  const total=g.vagas_total;
+  const pct=total?Math.round(usadas/total*100):0;
+  let classe="";if(usadas>=total)classe="cheio";else if(pct>=80)classe="quase";
+
+  $("vagas-titulo").textContent=`Vagas · ${g.nome}`;
+  $("vagas-resumo").innerHTML=`
+    <div class="linha"><span>Escola</span><b>${g.nome}</b></div>
+    <div class="linha"><span>Local</span><b>${g.municipio?g.municipio+"/"+g.uf:(g.uf||"—")}</b></div>
+    <div class="linha"><span>Validade do contrato</span><b>${fmtData(g.data_expiracao)}</b></div>
+    <div class="linha"><span>Vagas usadas</span><b>${usadas} de ${total}</b></div>
+    <div class="barra-vagas"><div class="preenchido ${classe}" style="width:${Math.min(pct,100)}%;"></div></div>
+  `;
+
+  const profs=g.professores||[];
+  $("lista-profs").innerHTML=profs.length?profs.map(p=>{
+    const extra=[p.cpf?"CPF: "+p.cpf:"",p.telefone?"Tel: "+p.telefone:""].filter(Boolean).join(" · ");
+    return`
+    <div class="prof-item">
+      <div class="dados">
+        <div class="nome">${p.nome||"(sem nome)"}</div>
+        <div class="email">${p.email}${extra?" · "+extra:""}</div>
+      </div>
+      <button class="btn btn-perigo btn-mini" data-action="remover-prof" data-pid="${p.id}">Remover</button>
+    </div>`;}).join(""):'<p style="color:var(--texto-suave);font-size:13px;">Nenhum professor adicionado ainda.</p>';
+}
+
+async function addProfUm(){
+  const g=grupos.find(x=>x.id===grupoAtual);
+  const nome=$("v-nome").value.trim();
+  const email=$("v-email").value.trim().toLowerCase();
+  const cpf=$("v-cpf").value.trim();
+  const telefone=$("v-telefone").value.trim();
+  $("vagas-erro").textContent="";
+  if(!email){$("vagas-erro").textContent="Informe o e-mail do professor.";return;}
+  if((g.professores||[]).length>=g.vagas_total){$("vagas-erro").textContent=`Limite de ${g.vagas_total} vagas atingido. Remova alguém ou aumente as licenças.`;return;}
+  if((g.professores||[]).some(p=>p.email===email)){$("vagas-erro").textContent="Esse e-mail já está no grupo.";return;}
+
+  const prof={id:"p"+Date.now(),nome,email,cpf,telefone};
+  if(MODO_DEMO){g.professores=g.professores||[];g.professores.push(prof);}
+  else{
+    await fb.addDoc(fb.collection(db,"grupos",g.id,"professores"),{...prof,adicionado_em:fb.serverTimestamp()});
+    await carregarFirestore();grupoAtual=g.id;
+  }
+  ["v-nome","v-email","v-cpf","v-telefone"].forEach(id=>$(id).value="");
+  renderVagas();renderTudo();
+}
+
+async function addProfLote(){
+  const g=grupos.find(x=>x.id===grupoAtual);
+  $("vagas-erro").textContent="";
+  const linhas=$("v-lote").value.split("\n").map(l=>l.trim().toLowerCase()).filter(Boolean);
+  if(!linhas.length){$("vagas-erro").textContent="Cole pelo menos um e-mail.";return;}
+
+  const existentes=new Set((g.professores||[]).map(p=>p.email));
+  let adicionados=0,ignorados=0,semVaga=0;
+
+  for(const email of linhas){
+    if(!email.includes("@")){ignorados++;continue;}
+    if(existentes.has(email)){ignorados++;continue;}
+    if((g.professores||[]).length>=g.vagas_total){semVaga++;continue;}
+    const prof={id:"p"+Date.now()+"_"+adicionados,nome:"",email};
+    if(MODO_DEMO){g.professores=g.professores||[];g.professores.push(prof);}
+    else{await fb.addDoc(fb.collection(db,"grupos",g.id,"professores"),{...prof,adicionado_em:fb.serverTimestamp()});}
+    existentes.add(email);adicionados++;
+  }
+  if(!MODO_DEMO){await carregarFirestore();grupoAtual=g.id;}
+  $("v-lote").value="";
+  let msg=`${adicionados} adicionado(s).`;
+  if(ignorados)msg+=` ${ignorados} ignorado(s) (repetido ou inválido).`;
+  if(semVaga)msg+=` ${semVaga} sem vaga (limite atingido).`;
+  $("vagas-erro").style.color=adicionados?"var(--verde)":"var(--vermelho)";
+  $("vagas-erro").textContent=msg;
+  renderVagas();renderTudo();
+}
+
+async function removerProf(pid){
+  const g=grupos.find(x=>x.id===grupoAtual);
+  if(MODO_DEMO){g.professores=g.professores.filter(p=>p.id!==pid);}
+  else{await fb.deleteDoc(fb.doc(db,"grupos",g.id,"professores",pid));await carregarFirestore();grupoAtual=g.id;}
+  renderVagas();renderTudo();
+}
+
+async function excluirGrupo(gid){
+  const g=grupos.find(x=>x.id===gid);
+  pedirConfirma("Excluir grupo",`Excluir o grupo <b>${g.nome}</b> e todos os ${(g.professores||[]).length} professores vinculados? Não pode ser desfeito.`,async()=>{
+    if(MODO_DEMO){grupos=grupos.filter(x=>x.id!==gid);}
+    else{await fb.deleteDoc(fb.doc(db,"grupos",gid));await carregarFirestore();}
+    fecharConfirma();renderTudo();
+  });
+}
+async function mudarStatusGrupo(gid,novo){
+  const g=grupos.find(x=>x.id===gid);
+  if(MODO_DEMO){g.status_acesso=novo;}
+  else{await fb.setDoc(fb.doc(db,"grupos",gid),{status_acesso:novo},{merge:true});await carregarFirestore();}
+  renderTudo();
+}
+
+// =====================================================================
+// FIRESTORE
+// =====================================================================
+async function carregarFirestore(){
+  // usuários individuais
+  const snap=await fb.getDocs(fb.collection(db,"usuarios"));
+  usuarios=[];
+  for(const d of snap.docs){
+    const dados=d.data();
+    let pagamentos=[];
+    try{const ps=await fb.getDocs(fb.collection(db,"usuarios",d.id,"pagamentos"));pagamentos=ps.docs.map(x=>x.data());}catch(e){}
+    usuarios.push({uid:d.id,...dados,pagamentos});
+  }
+  // grupos escolares
+  try{
+    const gs=await fb.getDocs(fb.collection(db,"grupos"));
+    grupos=[];
+    for(const d of gs.docs){
+      const dados=d.data();
+      let professores=[];
+      try{const ps=await fb.getDocs(fb.collection(db,"grupos",d.id,"professores"));professores=ps.docs.map(x=>({id:x.id,...x.data()}));}catch(e){}
+      grupos.push({id:d.id,...dados,professores});
+    }
+  }catch(e){grupos=[];}
+}
+
+// =====================================================================
+// AUTH
+// =====================================================================
+async function entrar(){
+  const email=$("login-email").value.trim();const senha=$("login-senha").value;
+  $("login-erro").textContent="";
+  if(MODO_DEMO){mostrarPainel(email||"demo@portaldoeducador.com.br");return;}
+  try{await fb.signIn(auth,email,senha);}
+  catch(e){$("login-erro").textContent="E-mail ou senha inválidos.";}
+}
+function mostrarPainel(email){
+  $("tela-login").style.display="none";$("painel").style.display="block";
+  $("admin-email").textContent=email;renderTudo();
+}
+async function sair(){if(MODO_DEMO){location.reload();return;}await fb.signOut(auth);location.reload();}
+
+// =====================================================================
+// EVENTOS
+// =====================================================================
+popularUFs();
+$("btn-entrar").addEventListener("click",entrar);
+$("login-senha").addEventListener("keydown",e=>{if(e.key==="Enter")entrar();});
+$("btn-sair").addEventListener("click",sair);
+$("btn-novo").addEventListener("click",()=>abrirCad(null));
+$("btn-novo-grupo").addEventListener("click",()=>abrirGrupo(null));
+$("btn-salvar-grupo").addEventListener("click",salvarGrupo);
+$("btn-busca-cnpj").addEventListener("click",buscarCNPJ);
+$("g-uf").addEventListener("change",carregarMunicipiosGrupo);
+$("btn-add-prof").addEventListener("click",addProfUm);
+$("btn-add-lote").addEventListener("click",addProfLote);
+$("btn-salvar").addEventListener("click",salvarCad);
+$("btn-reg-pag").addEventListener("click",registrarPag);
+$("busca").addEventListener("input",renderTabela);
+$("filtro-status").addEventListener("change",renderTabela);
+$("filtro-plano").addEventListener("change",renderTabela);
+$("filtro-uf").addEventListener("change",renderTabela);
+$("f-plano").addEventListener("change",atualizarInfoValidade);
+$("f-inicio").addEventListener("change",atualizarInfoValidade);
+$("f-uf").addEventListener("change",carregarMunicipios);
+$("btn-confirma-ok").addEventListener("click",()=>{if(acaoConfirma)acaoConfirma();});
+
+// ordenação por cabeçalho
+document.querySelectorAll("th[data-ord]").forEach(th=>{
+  th.addEventListener("click",()=>{
+    const c=th.dataset.ord;
+    if(ordenacao.campo===c)ordenacao.asc=!ordenacao.asc;else{ordenacao.campo=c;ordenacao.asc=true;}
+    renderTabela();
+  });
+});
+
+// delegação
+document.body.addEventListener("click",e=>{
+  const alvo=e.target.closest("[data-action]");if(!alvo)return;
+  const acao=alvo.dataset.action;const uid=alvo.dataset.uid;const gid=alvo.dataset.gid;const pid=alvo.dataset.pid;
+  if(acao==="pagar")abrirPag(uid);
+  if(acao==="editar")abrirCad(uid);
+  if(acao==="hist")abrirHist(uid);
+  if(acao==="excluir")excluirUsuario(uid);
+  if(acao==="suspender")mudarStatus(uid,"suspenso");
+  if(acao==="reativar")mudarStatus(uid,"ativo");
+  // grupos
+  if(acao==="vagas")abrirVagas(gid);
+  if(acao==="editar-grupo")abrirGrupo(gid);
+  if(acao==="excluir-grupo")excluirGrupo(gid);
+  if(acao==="suspender-grupo")mudarStatusGrupo(gid,"suspenso");
+  if(acao==="reativar-grupo")mudarStatusGrupo(gid,"ativo");
+  if(acao==="remover-prof")removerProf(pid);
+  // fechar modais
+  if(acao==="fechar-cad")fecharCad();
+  if(acao==="fechar-pag")fecharPag();
+  if(acao==="fechar-hist")fecharHist();
+  if(acao==="fechar-confirma")fecharConfirma();
+  if(acao==="fechar-grupo")fecharGrupo();
+  if(acao==="fechar-vagas")fecharVagas();
+});
+
+["modal-cad","modal-pag","modal-hist","modal-confirma","modal-grupo","modal-vagas"].forEach(id=>{
+  $(id).addEventListener("click",e=>{if(e.target.id===id)$(id).classList.remove("aberto");});
+});
+
+// INIT
+if(!MODO_DEMO){
+  fb.onAuthStateChanged(auth,async user=>{
+    if(user){await carregarFirestore();mostrarPainel(user.email);}
+  });
+}
+</script>
+</body>
+</html>
